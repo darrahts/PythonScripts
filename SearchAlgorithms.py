@@ -18,7 +18,13 @@ SEARCHER CLASS
 
     Functions:
 
+        DFSHelper(self, source, destination)
+        DepthFirstSearchRecursive(self, source, destination)
         Astar(self, source, destination)
+        DepthFirstSearchStack(self, source, destination)
+        BreadthFirstSearch(self, source, destination)
+        LowestCostFirstSearch(self, source, destination)
+        AStar(self, source, destination)
 
         
     
