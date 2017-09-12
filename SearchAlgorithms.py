@@ -1,7 +1,5 @@
 from DataStructures import *
-from typing import *
 
-#test line
 
 #*************************************************************************
 #*************************************************************************
@@ -33,7 +31,7 @@ SEARCHER CLASS
 *************************************************************************
 '''
     def __init__(self, graph):
-        self.graph: Graph = graph
+        self.graph = graph
         self.goals = []
         self.goalFound = False
 
@@ -164,7 +162,7 @@ SEARCHER CLASS
 
 
 
-G : Graph = Graph()
+G = Graph()
 
 for i in range(0, 14):
     newNode = Node(("node_%i" %i), 1)
