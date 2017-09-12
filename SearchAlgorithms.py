@@ -142,7 +142,7 @@ SEARCHER CLASS
                 for l in u.links:
                     v = l.neighbor
                     distThruU = u.key +l.weight
-                    estDist = v.h + distThruU
+                    estDist = self.CalculateHeuristic(v) + distThruU
                     if(estDist < v.key + v.h):
                         PQ.RemoveNode(v)
                         v.key = estDist
@@ -150,8 +150,9 @@ SEARCHER CLASS
                         PQ.Insert(v)
 
 
-    def CalculateHeuristics(self) -> str:
-        return 4.2
+    def CalculateHeuristic(self, node):
+        #need to implement this
+        return node.h
 
 
 
