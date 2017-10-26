@@ -450,9 +450,7 @@ class Graph(object):
 ************************************************************************************
 GRAPH CLASS
 
-    The graph can be a directed or undirected representation of a state-space
-    problem and can hold various forms such as a BST, MST, DAG, etc...  Duplicate
-    nodes are not allowed, however a node can have multiple inbound/outbound arcs.
+    The graph is a directed (use double links for undirected) representation of a state-space
 
     Properties:
 
@@ -526,15 +524,19 @@ GRAPH CLASS
     def GetPath(self, destination):
         path = []
         node = destination
+        cost = 0
         path.append(destination)
-        while(node.parent is not ""):
-            node = node.parent
+        while(type(node.parent) is type(node)):
             path.append(node)
-        return list(reversed(path))
+            if(type(node.parent) is type(node)):
+                cost += node.key - node.parent.key #the keys contain the total path cost
+                node = node.parent
+                print(node.name)
+        path.append(node) #add the source node
+        return list(reversed(path)), cost
 
 
-    def PrintPath(self, destination):
-        path = self.GetPath(destination)
+    def PrintPath(self, destination, path):
         for n in path:
             print("-" +str(n.key)+  "->(" + n.name + ")", end='', flush=True)
             if(n is destination):
@@ -580,7 +582,7 @@ myStack.Pop()
 '''
 
 
-
+'''
 #Fifo queue testing
 
 #FifoQueue.Help()
@@ -611,7 +613,7 @@ for i in range(0, 11):
     newNode = Node(("node_%i" %i), i)
     toCheck.EnQueue(newNode)
 
-
+#constraint checking for the above domains
 while(toCheck.Count() > 0 and checked.Count() != 11):
     count += 1
     x = toCheck.DeQueue()
@@ -740,7 +742,7 @@ print("count after finding all possible models: " + str(count))
 #print("length: " + str(myQueue.Count()))
 #myQueue.PrintQueue()
 
-
+'''
 
 '''
 #graph testing
@@ -758,12 +760,12 @@ print("after links: ")
 G[0].links.append(DLink(G[5], 1))
 G[0].links.append(DLink(G[9], 99))
 G[2].links.append(DLink(G[4], 1))
-G[2].links.append(DLink(G[7], 1))
+G[2].links.append(DLink(G[7], 3))
 G[2].links.append(DLink(G[6], 5))
 #G[2].links.append(DLink(G[0], 1))
 G[4].links.append(DLink(G[1], 1))
 G[5].links.append(DLink(G[2], 1))
-G[7].links.append(DLink(G[9], 1))
+G[7].links.append(DLink(G[9], 7))
 G[6].links.append(DLink(G[1], 1))
 G[6].links.append(DLink(G[8], 3))
 G[6].links.append(DLink(G[2], 2))
@@ -777,12 +779,13 @@ G[7].parent = G[2]
 G[2].parent =  G[5]
 G[5].parent = G[0]
 path, cost = G.GetPath(G[9])
+#path = G.GetPath(G[9])
 for n in path:
     print(n.ToString())
 print("cost: " + str(cost))
 print(G[9].ToString())
-
-G.PrintPath(G[6])
+print("The Path: ")
+G.PrintPath(G[9], path)
 '''
 
 

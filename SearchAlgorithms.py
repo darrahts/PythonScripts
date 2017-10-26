@@ -252,7 +252,9 @@ dest = G[1]
 searcher.AStar(src, dest)
 print("finished search!")
 print(str(dest.key))
-G.PrintPath(dest)
+path, cost = G.GetPath(dest)
+print("cost: " + str(cost))
+G.PrintPath(dest, path)
 
 
 
