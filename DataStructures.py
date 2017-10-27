@@ -525,10 +525,11 @@ GRAPH CLASS
         path = []
         node = destination
         cost = 0
-        path.append(destination)
+        #path.append(destination)
         while(type(node.parent) is type(node)):
             path.append(node)
             if(type(node.parent) is type(node)):
+                #cost += node.key 
                 cost += node.key - node.parent.key #the keys contain the total path cost
                 node = node.parent
                 print(node.name)
@@ -746,6 +747,9 @@ print("count after finding all possible models: " + str(count))
 
 '''
 #graph testing
+#note the path cost doesnt update correctly yet
+#use the search algorithms to see the graph work
+#the graph code still needs updated
 
 G = Graph()
 
@@ -757,16 +761,16 @@ print("before links: ")
 G.PrintGraph()
 print()
 print("after links: ")
-G[0].links.append(DLink(G[5], 1))
+G[0].links.append(DLink(G[5], 6))
 G[0].links.append(DLink(G[9], 99))
-G[2].links.append(DLink(G[4], 1))
+G[2].links.append(DLink(G[4], 8))
 G[2].links.append(DLink(G[7], 3))
 G[2].links.append(DLink(G[6], 5))
-#G[2].links.append(DLink(G[0], 1))
-G[4].links.append(DLink(G[1], 1))
-G[5].links.append(DLink(G[2], 1))
+#G[2].links.append(DLink(G[0], 7))
+G[4].links.append(DLink(G[1], 3))
+G[5].links.append(DLink(G[2], 3))
 G[7].links.append(DLink(G[9], 7))
-G[6].links.append(DLink(G[1], 1))
+G[6].links.append(DLink(G[1], 5))
 G[6].links.append(DLink(G[8], 3))
 G[6].links.append(DLink(G[2], 2))
 G.PrintGraph()
