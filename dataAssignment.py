@@ -10,7 +10,7 @@ def LoadData(path, returnBunch=True):
     with open(os.path.join(path, 'BettysBrainDataForAnalysis.csv')) as f:
         file = csv.reader(f)
 
-        #get first line which is 40,14 for bettys brain 
+        #get first line
         temp = next(file)
         numSamples = int(temp[0])
         numFeatures = int(temp[1])
