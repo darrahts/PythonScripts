@@ -8,6 +8,8 @@ from pylab import rcParams
 import os
 import csv
 import graphviz
+import pydotplus
+import collections
 
 def LoadData(path, returnBunch=True):
     with open(os.path.join(path, 'BettysBrainDataForAnalysis.csv')) as f:
@@ -148,7 +150,7 @@ def RegressionTesting():
 
 def DecisionTreeTesting():
     #load the data
-    data = LoadData1("E:\Downloads")
+    data = LoadData1("/home/tdarrah/PythonScripts/")
     df = pd.DataFrame(data.data, columns=data.feature_names)
     
     X = df[["num_map_moves", "time_viewing_concept_map_ms", "num_causal_link_adds", "num_causal_link_adds_effective"]] 
@@ -159,21 +161,38 @@ def DecisionTreeTesting():
     #split the data
     xTrain, xTest, yTrain, yTest = cross_validation.train_test_split(X, y, test_size = .25, random_state=100)
     #decision tree classifier
-    dtc_1 = tree.DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=5, min_samples_split=6, min_samples_leaf=3)
+    dtc_1 = tree.DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=8, min_samples_split=6, min_samples_leaf=3)
     dtc_1.fit(xTrain, yTrain)
     yPred_1 = dtc_1.predict(xTest)
     print(yPred_1)
     print(metrics.accuracy_score(yTest,yPred_1))
 
-    dtc_2 = tree.DecisionTreeClassifier(criterion="entropy", random_state=100, max_depth=5, min_samples_split=6, min_samples_leaf=3)
+    dtc_2 = tree.DecisionTreeClassifier(criterion="entropy", random_state=100, max_depth=8, min_samples_split=6, min_samples_leaf=3)
     dtc_2.fit(xTrain, yTrain)
     yPred_2 = dtc_2.predict(xTest)
     print(metrics.accuracy_score(yTest,yPred_2))
 
+    dot_data = tree.export_graphviz(dtc_2, feature_names=["num_map_moves", "time_viewing_concept_map_ms", "num_causal_link_adds", "num_causal_link_adds_effective"], out_file=None, filled=True, rounded=True)
+    graph = pydotplus.graph_from_dot_data(dot_data)
+   
+    colors = ('turquoise', 'orange', 'blue')
+    edges = collections.defaultdict(list)
+
+    for edge in graph.get_edge_list():
+        edges[edge.get_source()].append(int(edge.get_destination()))
+ 
+    for edge in edges:
+        edges[edge].sort()    
+        for i in range(2):
+            dest = graph.get_node(str(edges[edge][i]))[0]
+            dest.set_fillcolor(colors[i])
+
+    graph.write_png("dtc_2.png")
+    
     #visualization - gives errors but should work
-    dot_data = tree.export_graphviz(dtc_1, out_file=None)
+    #dot_data = tree.export_graphviz(dtc_2, out_file=None)
     #graph = graphviz.Source(dot_data)
-    #graph.render("test")
+    #graph.render("test2")
 
 
 
