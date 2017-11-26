@@ -114,13 +114,35 @@ def Test_3(df, target):#   92.9%
     predictions = model.predict(X)
     print(model.summary())
 
-def Test_4(df, target): #   94.7% 
+def Test_4(df, target): # 94.7% 
     '''This is the entire data set'''
     X = df
     y = target
     model = sm.OLS(y, X).fit()
     predictions = model.predict(X)
     print(model.summary())
+    Z = np.array(X["num_causal_link_adds_effective"])
+    XX = []
+    for val in Z:
+        XX.append(int(val))
+    Q = np.array(XX)
+    y = np.array(y)
+    yy = []
+    for val in y:
+        yy.append(int(val))
+    s = np.array(yy)
+    slope, intercept, rVal, pVal, stdErr = stats.linregress(Q, s)
+    line = slope*Z+intercept
+    plt.plot(Z, y, 'o', Z, line)
+    plt.text(5, 22, "r value: {:.3f}".format(rVal))
+    plt.text(5, 21, "std err: {:.3f}".format(stdErr))
+    plt.text(5, 25, "Line of Best Fit")
+    plt.text(5, 24, "y={:.2f}x + {:.2f}".format(slope, intercept) )#,fontdict=font)
+    plt.title("Sample Plot of Betty's Brain Data Analysis ")
+    plt.xlabel("Effective Link Adds")
+    plt.ylabel("Final Map Score")
+    #plt.scatter(Z, y)
+    plt.show()
 
 def Test_5(df, target): #   84.8%
     '''This uses the entire data set with sklearn.linear_model.LinearRegression().fit(df,target)'''
