@@ -63,7 +63,10 @@ def LoadData1(path, returnBunch=True):
 
     return datasets.base.Bunch(data=data, target=targets,feature_names=featureNames, DESCR="test description of the bettys brain  data")
 
+
+'''*****************************************************************'''
 '''                                    REGRESSION                   '''
+'''*****************************************************************'''
 # TO-DO polynomial regression, ridge regression, others
 
 def Test_1(df, target): # 91.6% prediction accuracy i.e. percentage of variance the model explains uses least squares
@@ -145,8 +148,9 @@ def RegressionTesting():
     print(data.DESCR)
 
 
-'''                                    DECISION TREE                   '''
-
+'''*****************************************************************'''
+'''                                    DECISION TREE                '''
+'''*****************************************************************'''
 
 def DecisionTreeTesting():
     #load the data
@@ -195,15 +199,16 @@ def DecisionTreeTesting():
     #graph.render("test2")
 
 
-
+'''*****************************************************************'''
+'''                                        MAIN                     '''
+'''*****************************************************************'''
 
 if __name__ == "__main__":
     #clear the warnings generated from the imported libraries
     os.system('cls' if os.name == 'nt' else 'clear')
     DecisionTreeTesting()
+    #RegressionTesting()
 
 
-    #print(X)
-    #print(Y)
 
 
