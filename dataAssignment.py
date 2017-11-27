@@ -5,11 +5,15 @@ import statsmodels.api as sm
 import matplotlib.pyplot as plt
 from sklearn import tree, metrics, datasets, linear_model, preprocessing, cross_validation, svm
 from pylab import rcParams
+from scipy.cluster.hierarchy import dendrogram, linkage, cophenet
+from scipy.spatial.distance import pdist
 import os
 import csv
 import graphviz
 import pydotplus
 import collections
+#from tabulate import tabulate
+from prettytable import PrettyTable
 
 def LoadData(path, returnBunch=True):
     '''   This loads the data with map scores as targets  '''
@@ -68,19 +72,18 @@ def LoadData1(path, returnBunch=True):
 
 def LoadData2(path):
     ''' This loads the data set as a nxm matrix '''
-    with open(os.path.join(path, 'BettysBrainDataForAnalysis.csv')) as f:
+    with open(os.path.join(path, 'BettysBrainDataForAnalysisAll3.csv')) as f:
         file = csv.reader(f)
         #   get first line
         temp = next(file)
-        numSamples = int(temp[0])
-        numFeatures = int(temp[1])
+        features = np.array(temp[:])
         
-        #   generate empty arrays
-        data = np.empty((numSamples, numFeatures))
+        #   generate empty arrays, change this to match number of freatures
+        data = np.empty((40, 16))
 
         for i, d in enumerate(file):
             data[i] = np.asarray(d[:], dtype=np.float64) #
-    return data
+    return data, features
 
 '''*****************************************************************'''
 '''                                    REGRESSION                   '''
@@ -121,6 +124,8 @@ def Test_4(df, target): # 94.7%
     model = sm.OLS(y, X).fit()
     predictions = model.predict(X)
     print(model.summary())
+
+    #   Plot, not sure why but the xx and yy q z etc made it work, should have worked with one conversion
     Z = np.array(X["num_causal_link_adds_effective"])
     XX = []
     for val in Z:
@@ -194,10 +199,10 @@ def RegressionTesting():
 
 def DecisionTreeTesting():
     #   load the data
-    data = LoadData1("/home/tdarrah/PythonScripts/")
+    data = LoadData1("/home/tdarrah/Documents/PythonScripts/")
     df = pd.DataFrame(data.data, columns=data.feature_names)
 
-    #   features
+    #   features  ALSO change the dot_data line below to match the feature names
     X = df[["num_map_moves", "time_viewing_concept_map_ms", "num_causal_link_adds", "num_causal_link_adds_effective"]] 
     #X = df[["num_map_moves", "time_viewing_concept_map_ms", "time_viewing_graded_questions_ms", "time_viewing_graded_explanations_ms", "time_viewing_ungraded_explanations_ms", "num_causal_link_adds", "num_causal_link_adds_effective"]]
     #X = df
@@ -221,6 +226,7 @@ def DecisionTreeTesting():
 
     #   decision tree visualization, change feature names to match the correct feature set above
     dot_data = tree.export_graphviz(dtc_2, feature_names=["num_map_moves", "time_viewing_concept_map_ms", "num_causal_link_adds", "num_causal_link_adds_effective"], out_file=None, filled=True, rounded=True)
+    #dot_data = tree.export_graphviz(dtc_2, feature_names=data.feature_names, out_file=None, filled=True, rounded=True)
     graph = pydotplus.graph_from_dot_data(dot_data)
    
     colors = ('turquoise', 'orange')
@@ -243,6 +249,61 @@ def DecisionTreeTesting():
     #graph.render("test2")
 
 
+def RangeNormalization(X):
+    temp = X
+    i = 0
+    minVal = min(X)
+    maxVal = max(X)
+    for val in X:
+        temp[i] = ((val - minVal) / (maxVal - minVal))
+        i += 1
+    return temp
+
+
+'''*****************************************************************'''
+'''                                     CLUSTERING                  '''
+'''*****************************************************************'''
+def Clustering():
+    data, features = LoadData2("/home/tdarrah/Documents/PythonScripts/")
+
+    #normalize the millisecond values only
+    for i in range(1, 16):
+        X = data[:,i]
+        data[:,i] = RangeNormalization(X)
+
+    #   find the best method/metric combo for heirarchical clustering
+    methods = ["single", "complete", "average", "weighted", "centroid", "median", "ward"]
+    metrics = ["euclidean", "cityblock", "cosine"]
+    best = ("", "", 0.1)
+
+    table = PrettyTable(["method", "metric", "cophenet"])
+    for m in methods:
+        for t in metrics:
+            try:
+                linkMatrix = linkage(data, method=m, metric=t)
+                c, cophDists = cophenet(linkMatrix, pdist(data))
+                if(c > best[2]):
+                    best = (m, t, c)
+
+                table.add_row([m, t, c])
+                
+                #   plot the dendrograms
+                plt.figure(figsize=(25, 10))
+                plt.title("Hierarchical Clustering Dendrogram using {} and {}".format(m, t))
+                plt.xlabel("data index (0-39)")
+                plt.ylabel("distance")
+                dendrogram(linkMatrix, leaf_rotation = 90., leaf_font_size=8.)
+                plt.show()
+                
+            except ValueError: 
+                pass
+
+    print("clustering data normalized to 0-1")
+    print(table)
+    print("best: {}".format(best))
+    
+
+
 '''*****************************************************************'''
 '''                                        MAIN                     '''
 '''*****************************************************************'''
@@ -250,8 +311,26 @@ def DecisionTreeTesting():
 if __name__ == "__main__":
     #clear the warnings generated from the imported libraries
     os.system('cls' if os.name == 'nt' else 'clear')
-    DecisionTreeTesting()
+
+    #DecisionTreeTesting()
     #RegressionTesting()
+    Clustering()
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
