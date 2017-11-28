@@ -176,24 +176,25 @@ def Test_6(df, target):
 
 def RegressionTesting():
     #   load the data
-    data = LoadData("E:\Downloads")
+    #data = LoadData("E:\Downloads")
+    data = LoadData("/home/tdarrah/PythonScripts/")
     #   independent variables
     df = pd.DataFrame(data.data, columns=data.feature_names)
     #   dependent variable
     target = pd.DataFrame(data.target, columns=["Final_Map_Score"])
 
-    Test_1(df, target)
+    #Test_1(df, target)
     #Test_2(df, target)
     #Test_3(df, target)
     #Test_4(df, target)
     #Test_5(df, target)
-    #Test_6(df, target)
+    Test_6(df, target)
 
     #print(df["num_map_moves"])
     #print(df)
     #print(target["Final_Map_Score"][39])
     #print(data.feature_names)
-    print(data.DESCR)
+    #print(data.DESCR)
 
 
 '''*****************************************************************'''
@@ -334,8 +335,8 @@ if __name__ == "__main__":
     #clear the warnings generated from the imported libraries
     os.system('cls' if os.name == 'nt' else 'clear')
 
-    DecisionTreeTesting()
-    #RegressionTesting()
+    #DecisionTreeTesting()
+    RegressionTesting()
     #Clustering()
     
 
