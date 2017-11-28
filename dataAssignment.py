@@ -44,25 +44,28 @@ def LoadData(path, returnBunch=True):
 
 def LoadData1(path, returnBunch=True):
     ''' This loads the data with group/individual as target '''
-    with open(os.path.join(path, 'BettysBrainDataForAnalysis.csv')) as f:
+    with open(os.path.join(path, 'BettysBrainDataForAnalysisAll3.csv')) as f:
         file = csv.reader(f)
 
         #   get first line
-        temp = next(file)
-        numSamples = int(temp[0])
-        numFeatures = int(temp[1])
+        #temp = next(file)
+        #numSamples = int(temp[0])
+        #numFeatures = int(temp[1])
         
         #   generate empty arrays
-        data = np.empty((numSamples, numFeatures))
-        targets = np.empty((numSamples,))
+        #data = np.empty((numSamples, numFeatures))
+        #targets = np.empty((numSamples,))
 
+        data = np.empty((40, 15))
+        targets = np.empty((40,))
+        
         #   get next line which is the column headers, less the last column (-1) i.e. feature names
         temp = next(file)
         featureNames = np.array(temp[1:])
 
         for i, d in enumerate(file):
-            data[i] = np.asarray(d[1:], dtype=np.float64) #   all but last column are the data features
-            targets[i] = np.asarray(d[0], dtype=np.float64) #   only the last column are the targets
+            data[i] = np.asarray(d[1:], dtype=np.float64) #   all but first column are the data features
+            targets[i] = np.asarray(d[0], dtype=np.float64) #   only the first column are the targets
 
     if not returnBunch:
         return data, targets
@@ -199,54 +202,73 @@ def RegressionTesting():
 
 def DecisionTreeTesting():
     #   load the data
-    data = LoadData1("/home/tdarrah/Documents/PythonScripts/")
+    data = LoadData1("/home/tdarrah/PythonScripts/")
     df = pd.DataFrame(data.data, columns=data.feature_names)
-
-    #   features  ALSO change the dot_data line below to match the feature names
-    X = df[["num_map_moves", "time_viewing_concept_map_ms", "num_causal_link_adds", "num_causal_link_adds_effective"]] 
+    #   features
+    #X = df[["num_map_moves", "time_viewing_concept_map_ms", "num_causal_link_adds", "num_causal_link_adds_effective"]] 
     #X = df[["num_map_moves", "time_viewing_concept_map_ms", "time_viewing_graded_questions_ms", "time_viewing_graded_explanations_ms", "time_viewing_ungraded_explanations_ms", "num_causal_link_adds", "num_causal_link_adds_effective"]]
-    #X = df
+    X = df
 
     #   target
     y = pd.DataFrame(data.target, columns=["subject_id"])
     
     #   split the data
-    xTrain, xTest, yTrain, yTest = cross_validation.train_test_split(X, y, test_size = .25, random_state=100)
+    xTrain, xTest, yTrain, yTest = cross_validation.train_test_split(X, y, test_size = .27, random_state=100)
+
     
-    #   decision tree classifiers, _1 is gini, _2 is entropy, other parameters can be experimented with 
-    dtc_1 = tree.DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=8, min_samples_split=6, min_samples_leaf=3)
-    dtc_1.fit(xTrain, yTrain)
-    yPred_1 = dtc_1.predict(xTest)
-    print(metrics.accuracy_score(yTest,yPred_1))
+    #   decision tree classifiers, _1 is gini, _2 is entropy, other parameters can be experimented with
+    dtcGini = tree.DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=50, min_samples_split=4, min_samples_leaf=1)
+    dtcGini.fit(xTrain, yTrain)
+    yPred_1 = dtcGini.predict(xTest)
+    accuracyGini = metrics.accuracy_score(yTest,yPred_1)
+    print(accuracyGini)
 
-    dtc_2 = tree.DecisionTreeClassifier(criterion="entropy", random_state=100, max_depth=8, min_samples_split=6, min_samples_leaf=3)
-    dtc_2.fit(xTrain, yTrain)
-    yPred_2 = dtc_2.predict(xTest)
-    print(metrics.accuracy_score(yTest,yPred_2))
-
-    #   decision tree visualization, change feature names to match the correct feature set above
-    dot_data = tree.export_graphviz(dtc_2, feature_names=["num_map_moves", "time_viewing_concept_map_ms", "num_causal_link_adds", "num_causal_link_adds_effective"], out_file=None, filled=True, rounded=True)
-    #dot_data = tree.export_graphviz(dtc_2, feature_names=data.feature_names, out_file=None, filled=True, rounded=True)
-    graph = pydotplus.graph_from_dot_data(dot_data)
+    #   decision tree visualization, change feature names to match the correct feature set above 
+    dot_data_gini = tree.export_graphviz(dtcGini, feature_names=data.feature_names, class_names=["individual", "group"], out_file=None, filled=True, rounded=True)
+    #dot_data_gini = tree.export_graphviz(dtcGini, feature_names=["num_map_moves", "time_viewing_concept_map_ms", "num_causal_link_adds", "num_causal_link_adds_effective"], class_names=["individual", "group"], out_file=None, filled=True, rounded=True)
+    graph_gini = pydotplus.graph_from_dot_data(dot_data_gini)
    
     colors = ('turquoise', 'orange')
     edges = collections.defaultdict(list)
 
-    for edge in graph.get_edge_list():
+    for edge in graph_gini.get_edge_list():
         edges[edge.get_source()].append(int(edge.get_destination()))
  
     for edge in edges:
         edges[edge].sort()    
         for i in range(2):
-            dest = graph.get_node(str(edges[edge][i]))[0]
+            dest = graph_gini.get_node(str(edges[edge][i]))[0]
             dest.set_fillcolor(colors[i])
 
-    graph.write_png("dtc_2.png")
+    graph_gini.write_png("dtcGini_FullDataSet_{:.2f}.png".format(accuracyGini))
+
+
+    dtcEntropy = tree.DecisionTreeClassifier(criterion="entropy", random_state=100, max_depth=50, min_samples_split=4, min_samples_leaf=1)
+    dtcEntropy.fit(xTrain, yTrain)
+    yPred_2 = dtcEntropy.predict(xTest)
+    accuracyEntropy = metrics.accuracy_score(yTest,yPred_2)
+    print(accuracyEntropy)
+
+    #   decision tree visualization, change feature names to match the correct feature set above 
+    dot_data_Entropy = tree.export_graphviz(dtcEntropy, feature_names=data.feature_names, class_names=["individual", "group"], out_file=None, filled=True, rounded=True)
+    #dot_data_Entropy = tree.export_graphviz(dtcEntropy, feature_names=["num_map_moves", "time_viewing_concept_map_ms", "num_causal_link_adds", "num_causal_link_adds_effective"], class_names=["individual", "group"], out_file=None, filled=True, rounded=True)
+    graph_Entropy = pydotplus.graph_from_dot_data(dot_data_Entropy)
+   
+    colors = ('turquoise', 'orange')
+    edges = collections.defaultdict(list)
+
+    for edge in graph_Entropy.get_edge_list():
+        edges[edge.get_source()].append(int(edge.get_destination()))
+ 
+    for edge in edges:
+        edges[edge].sort()    
+        for i in range(2):
+            dest = graph_Entropy.get_node(str(edges[edge][i]))[0]
+            dest.set_fillcolor(colors[i])
+
+    graph_Entropy.write_png("dtcEntropy_FullDataSet_{:.2f}.png".format(accuracyEntropy))
+
     
-    #visualization - gives errors but should work
-    #dot_data = tree.export_graphviz(dtc_2, out_file=None)
-    #graph = graphviz.Source(dot_data)
-    #graph.render("test2")
 
 
 def RangeNormalization(X):
@@ -312,9 +334,9 @@ if __name__ == "__main__":
     #clear the warnings generated from the imported libraries
     os.system('cls' if os.name == 'nt' else 'clear')
 
-    #DecisionTreeTesting()
+    DecisionTreeTesting()
     #RegressionTesting()
-    Clustering()
+    #Clustering()
     
 
 
