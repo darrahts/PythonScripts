@@ -7,17 +7,21 @@ from sklearn import tree, metrics, datasets, linear_model, preprocessing, cross_
 from pylab import rcParams
 from scipy.cluster.hierarchy import dendrogram, linkage, cophenet
 from scipy.spatial.distance import pdist
+from scipy import stats
 import os
 import csv
 import graphviz
 import pydotplus
 import collections
-#from tabulate import tabulate
 from prettytable import PrettyTable
 
-def LoadData(path, returnBunch=True):
+#   TODO
+#   - merge loadData functions
+#   - 
+
+def LoadData(path, fileName, targetColumn, returnBunch=True):
     '''   This loads the data with map scores as targets  '''
-    with open(os.path.join(path, 'BettysBrainDataForAnalysis.csv')) as f:
+    with open(os.path.join(path, fileName)) as f:
         file = csv.reader(f)
 
         #   get first line
@@ -96,7 +100,7 @@ def LoadData2(path):
 def Test_1(df, target): #   91.6% prediction accuracy i.e. percentage of variance the model explains uses least squares
     '''These values are highly related to final map score using statsmodels.api.OLS(target, df).fit() '''
 
-    X = df[["num_map_moves", "time_viewing_concept_map_ms", "num_causal_link_adds", "num_causal_link_adds_effective"]]
+    X = df[["subject_id", "num_map_moves", "num_causal_link_adds", "num_causal_link_adds_effective"]]
     y = target["Final_Map_Score"]
     model = sm.OLS(y, X).fit()
     predictions = model.predict(X)
@@ -142,10 +146,10 @@ def Test_4(df, target): # 94.7%
     slope, intercept, rVal, pVal, stdErr = stats.linregress(Q, s)
     line = slope*Z+intercept
     plt.plot(Z, y, 'o', Z, line)
-    plt.text(5, 22, "r value: {:.3f}".format(rVal))
-    plt.text(5, 21, "std err: {:.3f}".format(stdErr))
-    plt.text(5, 25, "Line of Best Fit")
-    plt.text(5, 24, "y={:.2f}x + {:.2f}".format(slope, intercept) )#,fontdict=font)
+    plt.text(7, 22, "r value: {:.3f}".format(rVal))
+    plt.text(7, 21, "std err: {:.3f}".format(stdErr))
+    plt.text(7, 25, "Line of Best Fit")
+    plt.text(7, 24, "y={:.2f}x + {:.2f}".format(slope, intercept) )#,fontdict=font)
     plt.title("Sample Plot of Betty's Brain Data Analysis ")
     plt.xlabel("Effective Link Adds")
     plt.ylabel("Final Map Score")
@@ -177,7 +181,7 @@ def Test_6(df, target):
 def RegressionTesting():
     #   load the data
     #data = LoadData("E:\Downloads")
-    data = LoadData("/home/tdarrah/PythonScripts/")
+    data = LoadData("/home/tdarrah/Documents/PythonScripts/", "BettysBrainDataForAnalysis.csv", 15)
     #   independent variables
     df = pd.DataFrame(data.data, columns=data.feature_names)
     #   dependent variable
@@ -186,9 +190,9 @@ def RegressionTesting():
     #Test_1(df, target)
     #Test_2(df, target)
     #Test_3(df, target)
-    #Test_4(df, target)
+    Test_4(df, target)
     #Test_5(df, target)
-    Test_6(df, target)
+    #Test_6(df, target)
 
     #print(df["num_map_moves"])
     #print(df)
@@ -205,7 +209,8 @@ def DecisionTreeTesting():
     #   load the data
     data = LoadData1("/home/tdarrah/PythonScripts/")
     df = pd.DataFrame(data.data, columns=data.feature_names)
-    #   features
+    
+    #   features, change feature set below in dot_data_xx to match 
     #X = df[["num_map_moves", "time_viewing_concept_map_ms", "num_causal_link_adds", "num_causal_link_adds_effective"]] 
     #X = df[["num_map_moves", "time_viewing_concept_map_ms", "time_viewing_graded_questions_ms", "time_viewing_graded_explanations_ms", "time_viewing_ungraded_explanations_ms", "num_causal_link_adds", "num_causal_link_adds_effective"]]
     X = df
@@ -217,7 +222,7 @@ def DecisionTreeTesting():
     xTrain, xTest, yTrain, yTest = cross_validation.train_test_split(X, y, test_size = .27, random_state=100)
 
     
-    #   decision tree classifiers, _1 is gini, _2 is entropy, other parameters can be experimented with
+    #   decision tree classifiers, other parameters can be experimented with
     dtcGini = tree.DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=50, min_samples_split=4, min_samples_leaf=1)
     dtcGini.fit(xTrain, yTrain)
     yPred_1 = dtcGini.predict(xTest)
