@@ -4,31 +4,15 @@ import math
 
 class KF(object):
 
-    def __init__(self):
-        self.trueVal = 0.0
-        self.estimate = 0.0
-        self.estimateError = 0.0
+    def __init__(self, groundTruth, initialEstimate, initialEstimateError, measurementError):
+        self.trueVal = groundTruth
+        self.estimate = initialEstimate
+        self.estimateError = initialEstimateError
         self.measurement = 0.0
-        self.measurementError = 0.0
-        self.previousEstimate = 0.0
-        self.previousEstimateError = 0.0
+        self.measurementError = measurementError
+        self.previousEstimate = initialEstimate
+        self.previousEstimateError = initialEstimateError
         self.kg = 0.0
-        return
-
-    def Initialize(self):
-        #self.trueVal = float(input("enter ground truth: "))
-        #self.previousEstimate = float(input("enter initial estimate: "))
-        #self.previousEstimateError = float(input("enter initial estimate error: "))
-        #self.measurement = float(input("enter initial measurement: "))
-        #self.measurementError = float(input("enter measurement error: "))
-
-        self.trueVal = 72
-        self.previousEstimate = 68
-        self.previousEstimateError = 2
-        self.estimateError = 2
-        self.measurement = 75
-        self.measurementError = 4
-        
         return
 
     def SetPrevious(self):
@@ -40,11 +24,8 @@ class KF(object):
         self.kg = self.estimateError / (self.estimateError + self.measurementError)
         return
 
-    def UpdateEstimate(self):
-        print(self.estimate)
-        print(self.previousEstimate)
-        print(self.kg)
-        print(self.measurement)
+    def UpdateEstimate(self, measurement):
+        self.measurement = measurement
         self.estimate = self.previousEstimate + self.kg*(self.measurement - self.previousEstimate)
         return
 
@@ -54,20 +35,31 @@ class KF(object):
 
 
 
+if(__name__ == "__main__"):
+    mu = 72 #true value
+    sigma = 2.1
+
+    dist = np.random.normal(mu, sigma, 200)
+
+    kf = KF(mu, 120, 2, 4)
+
+    for i in range(len(dist)):
+        kf.UpdateKalmanGain()
+        kf.UpdateEstimate(dist[i])
+        kf.UpdateUncertainty()
+        kf.SetPrevious()
+        print("{:.2f}    {:.2f}".format(kf.estimate, kf.estimateError))
 
 
 
 
 
 
-kf = KF()
 
-kf.Initialize()
-kf.UpdateKalmanGain()
-kf.UpdateEstimate()
-kf.UpdateUncertainty()
-kf.SetPrevious()
-print(kf.estimate)
+
+
+
+
 
 
 
