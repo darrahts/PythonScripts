@@ -41,7 +41,7 @@ if(__name__ == "__main__"):
 
     measurements = np.random.normal(mu, sigma, 200)
 
-    kf = KF(mu, 120, 2, 4)
+    kf = KF(mu, 77, 2, 4)
 
     for i in range(len(dist)):
         kf.UpdateKalmanGain()
