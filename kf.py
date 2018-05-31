@@ -39,11 +39,11 @@ if(__name__ == "__main__"):
     mu = 72 #true value
     sigma = 2.1
 
-    measurements = np.random.normal(mu, sigma, 200)
+    measurements = np.random.normal(mu, sigma, 20)
 
     kf = KF(mu, 77, 2, 4)
 
-    for i in range(len(dist)):
+    for i in range(len(measurements)):
         kf.UpdateKalmanGain()
         kf.UpdateEstimate(measurements[i])
         kf.UpdateUncertainty()
