@@ -19,7 +19,7 @@ def Var(x):
     for i in range(len(x)):
         _sum += (x[i] - xBar)**2
         
-    var = _sum/(len(x)-1)
+    var = _sum/(len(x))
 
     return var
 
@@ -33,7 +33,7 @@ def Cov(x,y):
     for i in range(len(x)):
         _sum += ((x[i]-xBar) * (y[i]-yBar))
         
-    cov = _sum / (len(x)-1)
+    cov = _sum / (len(x))
 
     return cov
         
@@ -53,11 +53,11 @@ print("xBar: ", xBar)
 print("yBar: ", yBar)
 print("xVar_1: ", xVar)
 print("yVar_1: ", yVar)
-print("cov_sample: ", Cov(x,y))
+print("cov: ", Cov(x,y))
 print()
-print("np.cov: ", np.cov(x,y)[0,1])
+print("np.cov (sample): ", np.cov(x,y,bias=True)[0,1])
 print("np.cov matrix:")
-print(np.cov(Z))
+print(np.cov(Z, bias=True))
 print()
 
 r = Cov(x,y)/(math.sqrt(xVar)*math.sqrt(yVar))
