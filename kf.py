@@ -26,6 +26,7 @@ meas_x = []
 meas_y = []
 
 k = []
+p = []
 
 dt = .1 #s
 a = -9.81 #m/s^2
@@ -67,19 +68,19 @@ Y = np.matrix([[0],
 
 
 #covariance matrix
-P = np.matrix([[36, 0, 0, 0],
-               [0, 9, 0, 0],
-               [0, 0, 49, 0],
-               [0, 0, 0, 16]])
+P = np.eye(4)*50
 
 #observation matrix
 H = np.eye(4)
 
 #process error covariance matrix
-Q = np.eye(4)*.1
+Q = np.eye(4)*3
 
 #measurement error covariance matrix
-R = np.eye(4)*.8
+R = np.matrix([[36, 0, 0, 0],
+               [0, 9, 0, 0],
+               [0, 0, 49, 0],
+               [0, 0, 0, 16]])
 
 
 X_hat = X
@@ -127,18 +128,33 @@ for i in range(0, 150):
 
     #update state and covariance
     X = X_hat + K*y
-    P = (np.eye(P.shape[0]) - K*H)*P_hat    
+    P = (np.eye(P.shape[0]) - K*H)*P_hat
+    p.append(P[0,0])
 
     
 plt.figure(1)
-plt.subplot(211)
-plt.plot(X_true[:,0],X_true[:,2], '-')
-plt.plot(meas_x, meas_y, '.')
-plt.plot(pred_x, pred_y, '-')
+plt.subplot(311)
+plt.xlabel("x-pos")
+plt.ylabel("y-pos")
+plt.plot(X_true[:,0],X_true[:,2], '-', label="true pos")
+plt.plot(meas_x, meas_y, '.', label="measured pos")
+plt.plot(pred_x, pred_y, '-', label = "predicted pos")
+plt.xlim(xmin=-10)
+plt.ylim(ymin=-10)
+plt.legend()
 
-
-plt.subplot(212)
+plt.subplot(312)
+plt.xlabel("iterations")
+plt.ylabel("Kalman Gain")
 plt.plot(k, '-')
+
+
+plt.subplot(313)
+plt.xlabel("iterations")
+plt.ylabel("covariance")
+plt.plot(p, '-')
+
+plt.subplots_adjust(hspace=.35)
 
 plt.show()
 
