@@ -7,13 +7,14 @@ import numpy as np
 kinematic equations:
 
 x_pos(n) = x_pos(n-1) + x_dot(n-1)*dt + .5ax*dt^2
-x_dot(n) = x_dot(n-1) + ax*dt - f*x_dot(n-1)         NOTE: f is drag constant
+x_dot(n) = x_dot(n-1) + ax*dt - f*x_dot(n-1)         NOTE: f is drag coefficient
 y_pos(n) = y_pos(n-1) + y_dot(n-1)*dt + .5ay*dt^2
 y_dot(n) = y_dot(n-1) + ay*dt - f*y_dot(n-1)
 
-since there is no x-acceleration, those terms will not be included in the matricies below
-drag is also not used at this time
+since there is no x-acceleration, those terms in x_pos & y_pos will not be included
+in the matricies below
 
+drag is also not included at this time
 '''
 
 # used to plot ground truth and basis for simulated measurements
@@ -68,13 +69,16 @@ Y = np.matrix([[0],
 
 
 #covariance matrix
-P = np.eye(4)*50
-
+P  = np.matrix([[1, .7, 0, 0],
+               [.7, 1, 0, 0],
+               [0, 0, 1, .7],
+               [0, 0, .7, 1]])
 #observation matrix
 H = np.eye(4)
 
 #process error covariance matrix
-Q = np.eye(4)*3
+#Q = lambda: np.eye(4)*random.gauss(5,.5)
+Q = np.eye(4)*5
 
 #measurement error covariance matrix
 R = np.matrix([[36, 0, 0, 0],
@@ -105,7 +109,7 @@ for i in range(0, 150):
 
     #update predictions
     X_hat = A*X + B*U
-    P_hat = A*P*np.transpose(A) + Q
+    P_hat = A*P*np.transpose(A) + Q#()
 
 
     #simulate taking noisy measurements
@@ -130,6 +134,8 @@ for i in range(0, 150):
     X = X_hat + K*y
     P = (np.eye(P.shape[0]) - K*H)*P_hat
     p.append(P[0,0])
+
+    print(k[i], "\t", p[i])
 
     
 plt.figure(1)
