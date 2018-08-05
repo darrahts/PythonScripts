@@ -49,7 +49,7 @@ X = np.matrix([[x_pos],
 
 #control matrix
 B = np.matrix([[0],
-               [(1/a)*-1*dt],
+               [(1/a)*-.65*dt],
                [.5*dt**2],
                [dt]])
 
@@ -79,7 +79,7 @@ Q = np.eye(4)
 
 #measurement error covariance matrix
 R = np.matrix([[36, 0, 0, 0],
-               [0, 9, 0, 0],
+               [0, 36, 0, 0],
                [0, 0, 49, 0],
                [0, 0, 0, 16]])
 
@@ -105,21 +105,31 @@ for i in range(0, 150):
     X_true[i] = np.transpose(X)
     
 # reset X, now these are the initial predicitons
-X = np.matrix([[10],
+X = np.matrix([[9],
                [v0*math.cos(math.pi/4)],
-               [120],
+               [40],
                [v0*math.sin(math.pi/4)]])
 
 print(X.transpose().shape)
 print(X_pred.shape)
 
 for i in range(0, 150):
+    if(i == 0):
+        m = input()
+        m = m.split(',')
+
     #add predictions to the plot
     X_pred[i] = X.transpose()
 
     #update predictions
     X_hat = A*X + B*U
-    P_hat = A*P*np.transpose(A) + Q#()
+    P_hat = A*P*np.transpose(A) + Q
+    if(i == 0):
+        print("xhat: ")
+        print(X_hat)
+        print("phat: ")
+        print(P_hat)
+    
 
 
     #simulate taking noisy measurements
@@ -127,21 +137,47 @@ for i in range(0, 150):
     Y[1,0] = random.gauss(X_true[i,1], 3)
     Y[2,0] = random.gauss(X_true[i,2], 9)
     Y[3,0] = random.gauss(X_true[i,3], 6)
+    if(i == 0):
+        Y[0,0] = int(m[0])
+        Y[1,0] = int(m[1])
+        Y[2,0] = int(m[2])
+        Y[3,0] = int(m[3])    
+        print(Y)
+    else:
+            #simulate taking noisy measurements
+        Y[0,0] = random.gauss(X_true[i,0], 9)
+        Y[1,0] = random.gauss(X_true[i,1], 3)
+        Y[2,0] = random.gauss(X_true[i,2], 9)
+        Y[3,0] = random.gauss(X_true[i,3], 6)
 
     #add measurements to our plots
     X_meas[i] = Y.transpose()
+    
     #find the residual
     y = Y - H*X_hat
 
     #calculate kalman gain
     S = H*P_hat*np.transpose(H) + R
     K = P_hat*np.transpose(H)*np.linalg.inv(S)
-    #K = np.linalg.solve((P_hat*np.transpose(H)), S)
     k.append(K[0,0])
 
     #update state and covariance
     X = X_hat + K*y
     P = (np.eye(P.shape[0]) - K*H)*P_hat
+
+    if(i == 0):
+        print("y: ")
+        print(y)
+        print("S: ")
+        print(S)
+        print("S-1:")
+        print(np.linalg.inv(S))
+        print("K:")
+        print(K)
+        print("X:")
+        print(X)
+        print("P")
+        print(P)
 
     
 plt.figure(1)

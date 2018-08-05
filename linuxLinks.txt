@@ -1,0 +1,35 @@
+Linux commands
+
+
+create image 
+
+fdisk -l /dev/[device]
+dd if=/dev/[devize] of=[imagename].img bs=[512, 1M] count=[count] <- optional
+
+
+resize
+
+sudo fdisk /dev/mmcblk0
+screenshot table
+d for delete
+2
+n
+p
+2
+start from screenshot
+end at convenience
+w
+exit
+sudo reboot
+sudo resize2fs /dev/mmcblk0p2
+sudo reboot
+df -h
+
+https://www.pyimagesearch.com/2017/09/04/raspbian-stretch-install-opencv-3-python-on-your-raspberry-pi/
+https://www.pyimagesearch.com/2018/01/22/install-dlib-easy-complete-guide/
+https://raspberrypi.stackexchange.com/questions/652/how-do-i-create-and-mount-a-partition-using-the-remainder-of-my-sd-card
+https://raspberrypi.stackexchange.com/questions/499/how-can-i-resize-my-root-partition
+https://www.google.com/search?q=linux+shrink+partition+without+losing+data&oq=linux+shrink+partition+&aqs=chrome.2.69i57j0l5.4527j1j9&sourceid=chrome&ie=UTF-8
+https://askubuntu.com/questions/47409/shrink-a-partition-without-losing-data
+https://www.howtoforge.com/partitioning_with_gparted
+

@@ -1,0 +1,101 @@
+####################################################################
+#                           removing bloat                         #
+####################################################################
+
+sudo apt-get remove --purge epiphany-browser xpdf omxplayer  scratch scratch2 smartsim -y
+sudo apt-get remove --purge minecraft-pi python-minecraftpi wolfram-engine wolframscript -ysudo apt-get remove --purge libreoffice* sonic-pi -y
+sudo apt-get remove realvnc-vnc-server -y
+sudo apt-get update -y
+sudo apt-get upgrade -y
+
+
+####################################################################
+#                           python stuff                           #
+###########################################################################
+# note, these are for system wide installations. for virtual environments #
+# or other setups, use with pip3 or python3 -m pip instead of apt-get     #
+###########################################################################
+
+sudo apt-get install python3-dev -y
+sudo apt-get install python3-numpy
+sudo apt-get install python3-scipy
+sudo apt-get install python3-matplotlib
+sudo apt-get install python3-sklearn
+sudo apt-get install python3-skimage
+wget https://bootstrap.pypa.io/get-pip.py
+sudo python3 get-pip.py 
+sudo rm get-pip.py 
+
+
+
+sudo apt-get install tightvncserver -y
+
+
+####################################################################
+#                        opencv dependancies                       #
+####################################################################
+
+sudo apt-get install build-essential cmake pkg-config -y
+sudo apt-get install libjpeg-dev libtiff5-dev libjasper-dev libpng12-dev -y
+sudo apt-get install libavcodec-dev libavformat-dev libswscale-dev libv4l-dev -y
+sudo apt-get install libxvidcore-dev libx264-dev -y
+sudo apt-get install libgtk2.0-dev libgtk-3-dev -y
+sudo apt-get install libatlas-base-dev gfortran -y
+sudo apt-get install libopenblas-dev liblapack-dev -y
+sudo apt-get install libx11-dev
+
+
+####################################################################
+#      make swap space  or additional partition(optional)          #
+###########################################################################
+# note, before altering the partition table, ensure you have plenty of    #
+# space left on your primary partition (i.e. at least 4gb). This method   #
+# is only good if the filesystem has not been expanded previously. Also,  #
+# using swap space on flash memory is not recommended due to the finite   #
+# number of write cycles, but in some cases, and with proper use, its ok. #
+###########################################################################
+
+sudo fdisk /dev/mmcblk0
+# type n to create a new partition
+# type p to make primary
+# type 3 for third partition (if you already have 3, type 4, etc..)
+# type a number 2000 greater than the "End" number of the last 
+# block (likely mmblk0p2) i.e.
+# Device        Boot    Start       End  Sectors  Size Id Type
+# /dev/mmcblk0p1        8192      96663   88472  43.2M c  W95 FAT32
+# /dev/mmcblk0p2       98304    9420799 9322496   4.5G 83 Linux
+# you would enter 9422799 as the start of this partition
+# for a 1.5gb swap partition, add appx 3000000 to your start number
+# type w to save changes, then exit
+sudo reboot
+##make additional partiton
+mkfs.ext4 /dev/mmcblk0p3
+sudo mkdir /some/directory/here
+sudo mount /dev/mmcblk0p3 /some/directory/here
+
+##make swap
+#sudo mkswap /dev/mmcblk0p3
+#sudo echo "/dev/mmcblk0p3 swap swap defaults 0 0" >> /etc/fstab
+#sudo reboot
+#sudo swapon /dev/mmcblk0p3
+#sudo nano /etc/dphys-swapfile
+## change the swap location to /dev/mmcblk0p3 (and uncomment the line)
+#sudo /etc/init.d/dphys-swapfile stop
+#sudo /etc/init.d/dphys-swapfile start
+
+
+####################################################################
+#                           build opencv                           #
+####################################################################
+#make sure you have 4gb of available space where opencv will be built
+#see above about making an additional partition if needed. 
+wget -O opencv.zip https://github.com/Itseez/opencv/archive/3.3.0.zip
+unzip opencv.zip 
+sudo rm opencv.zip 
+wget -O opencv_contrib.zip https://github.com/Itseez/opencv_contrib/archive/3.3.0.zip
+unzip opencv_contrib.zip 
+sudo rm opencv_contrib.zip 
+cd ~/opencv-3.3.0/
+mkdir build && cd build && cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D INSTALL_PYTHON_EXAMPLES=ON -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib-3.3.0/modules -D BUILD_EXAMPLES=ON ..
+make -j4
+
