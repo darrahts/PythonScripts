@@ -1,36 +1,48 @@
 import numpy as np
 import cv2
 
-cap = cv2.VideoCapture("peopleCounter.avi")
+cap = cv2.VideoCapture(0)
 
-out = cv2.VideoWriter("test.avi", -1, 10.0, (640,480))
+
+fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+
+w = int(cap.get(3))
+h = int(cap.get(4))
+print(w,h)
+
+out = cv2.VideoWriter("test2.avi", fourcc, 10.0, (w,h))
 
 
 bgSub = cv2.createBackgroundSubtractorMOG2(detectShadows = True)
 
-
-w = cap.get(3)
-h = cap.get(4)
 
 mx = int(w/2)
 my = int(h/2)
 
 count = 0
 
-while(cap.isOpened()):
-    ret, frame = cap.read()
-    bgMask = bgSub.apply(frame)
-    try:
+try:
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        try:
+##        if(cv2.waitKey(1) & 0xFF == ord('q')):
+##            break
         #cv2.putText(frame, "count: {}".format(count), (mx,my), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0),1,1)
-        cv2.imshow("Frame", bgMask)
-        count += 1
-    except Exception as e:
-        print(e)
-        print("EOF")
-        break
+            if (ret == True):
+                #print("true")
+                frame = cv2.flip(frame,-1)
+                bgMask = bgSub.apply(frame)
+                gray = cv2.cvtColor(bgMask, cv2.COLOR_GRAY2RGB)
+            #cv2.imshow("Frame", bgMask)
+                out.write(gray)
+        #count += 1
+        except Exception as e:
+            print(e)
+            print("EOF")
+            break
+finally:
+    cap.release()
+    out.release()
+    cv2.destroyAllWindows()
+    print("done")
 
-    if(cv2.waitKey(30) & 0xFF == 27):
-        break
-
-cap.release()
-cv2.destroyAllWindows()
