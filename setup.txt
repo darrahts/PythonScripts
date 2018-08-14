@@ -2,11 +2,22 @@
 #                           removing bloat                         #
 ####################################################################
 
-sudo apt-get remove --purge epiphany-browser xpdf omxplayer  scratch scratch2 smartsim -y
-sudo apt-get remove --purge minecraft-pi python-minecraftpi wolfram-engine wolframscript -ysudo apt-get remove --purge libreoffice* sonic-pi -y
-sudo apt-get remove realvnc-vnc-server -y
+sudo apt-get remove --purge chromium-browser xpdf omxplayer  scratch scratch2 smartsim -y
+sudo apt-get remove --purge minecraft-pi python-minecraftpi wolfram-engine wolframscript -y
+sudo apt-get remove --purge libreoffice* sonic-pi realvnc-vnc-server -y
 sudo apt-get update -y
 sudo apt-get upgrade -y
+
+
+####################################################################
+#                            misc packages                         #
+####################################################################
+
+sudo apt-get install tightvncserver -y
+sudo apt-get install arduino -y # might need to download manually
+                                # for cli support see issue 1981
+#sudo apt-get install epiphany-browser #only if you need a browser
+sudo apt-get install motion
 
 
 ####################################################################
@@ -16,20 +27,24 @@ sudo apt-get upgrade -y
 # or other setups, use with pip3 or python3 -m pip instead of apt-get     #
 ###########################################################################
 
+sudo apt-get install ipython3
 sudo apt-get install python3-dev -y
 sudo apt-get install python3-numpy
 sudo apt-get install python3-scipy
 sudo apt-get install python3-matplotlib
 sudo apt-get install python3-sklearn
 sudo apt-get install python3-skimage
+sudo apt-get install cython3
 wget https://bootstrap.pypa.io/get-pip.py
 sudo python3 get-pip.py 
 sudo rm get-pip.py 
+sudo pip3 install jupyter #note, configuration may be required 
+jupyter notebook --generate-config
+#jupyter notebook password #optional, password can be set in config
 
-
-
-sudo apt-get install tightvncserver -y
-
+git clone https://github.com/davisking/dlib.git
+cd dlib
+python3 setup.py install --yes USE_NEON_INSTRUCTIONS
 
 ####################################################################
 #                        opencv dependancies                       #
@@ -38,48 +53,58 @@ sudo apt-get install tightvncserver -y
 sudo apt-get install build-essential cmake pkg-config -y
 sudo apt-get install libjpeg-dev libtiff5-dev libjasper-dev libpng12-dev -y
 sudo apt-get install libavcodec-dev libavformat-dev libswscale-dev libv4l-dev -y
-sudo apt-get install libxvidcore-dev libx264-dev -y
+sudo apt-get install libxvidcore-dev libx264-dev libx11-dev -y
 sudo apt-get install libgtk2.0-dev libgtk-3-dev -y
 sudo apt-get install libatlas-base-dev gfortran -y
 sudo apt-get install libopenblas-dev liblapack-dev -y
-sudo apt-get install libx11-dev
 
 
 ####################################################################
-#      make swap space  or additional partition(optional)          #
+#      make additional partition or swap space (optional)          #
 ###########################################################################
-# note, before altering the partition table, ensure you have plenty of    #
-# space left on your primary partition (i.e. at least 4gb). This method   #
-# is only good if the filesystem has not been expanded previously. Also,  #
-# using swap space on flash memory is not recommended due to the finite   #
+# note, before altering the partition table, ensure you know what you are #
+# doing! If the filesystem has been expanded previously, use gparted to   #
+# shrink it first if you want an additional partition - but then why?     #
+# Using swap space on flash memory is not recommended due to the finite   #
 # number of write cycles, but in some cases, and with proper use, its ok. #
 ###########################################################################
 
 sudo fdisk /dev/mmcblk0
+# type p to list the partitions
 # type n to create a new partition
 # type p to make primary
 # type 3 for third partition (if you already have 3, type 4, etc..)
-# type a number 2000 greater than the "End" number of the last 
+# type a number 2048 greater than the "End" number of the last 
 # block (likely mmblk0p2) i.e.
 # Device        Boot    Start       End  Sectors  Size Id Type
 # /dev/mmcblk0p1        8192      96663   88472  43.2M c  W95 FAT32
 # /dev/mmcblk0p2       98304    9420799 9322496   4.5G 83 Linux
-# you would enter 9422799 as the start of this partition
-# for a 1.5gb swap partition, add appx 3000000 to your start number
+# you would enter 9422847 as the start of this partition
+# for a 1.5gb partition, add appx 3000000 to your start number (due to
+# 512b block size. for a partition large enough to build OpenCV you need
+# over 4gb, so something like 9000000 would work (appx 4.6gb)
 # type w to save changes, then exit
 sudo reboot
+##to resize a partition use
+#sudo resize2fs /dev/mmcblk0pX where X is the partition number to resize
+
 ##make additional partiton
 mkfs.ext4 /dev/mmcblk0p3
 sudo mkdir /some/directory/here
 sudo mount /dev/mmcblk0p3 /some/directory/here
+#to mount this everytime on boot, use (note: spaces are delimeters)
+echo "/dev/mmcblk0p3 /some/directory/here ext4 defaults,noatime 0 2" >> /etc/fstab
 
-##make swap
+##make entire partition available for swap
 #sudo mkswap /dev/mmcblk0p3
 #sudo echo "/dev/mmcblk0p3 swap swap defaults 0 0" >> /etc/fstab
 #sudo reboot
 #sudo swapon /dev/mmcblk0p3
+
+##make file on partition swap
+sudo touch /some/directory/here/swap
 #sudo nano /etc/dphys-swapfile
-## change the swap location to /dev/mmcblk0p3 (and uncomment the line)
+## change the swap location to /some/directory/here/swap (and uncomment the line)
 #sudo /etc/init.d/dphys-swapfile stop
 #sudo /etc/init.d/dphys-swapfile start
 
@@ -89,13 +114,14 @@ sudo mount /dev/mmcblk0p3 /some/directory/here
 ####################################################################
 #make sure you have 4gb of available space where opencv will be built
 #see above about making an additional partition if needed. 
+cd /some/directory/here
 wget -O opencv.zip https://github.com/Itseez/opencv/archive/3.3.0.zip
 unzip opencv.zip 
 sudo rm opencv.zip 
 wget -O opencv_contrib.zip https://github.com/Itseez/opencv_contrib/archive/3.3.0.zip
 unzip opencv_contrib.zip 
 sudo rm opencv_contrib.zip 
-cd ~/opencv-3.3.0/
-mkdir build && cd build && cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D INSTALL_PYTHON_EXAMPLES=ON -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib-3.3.0/modules -D BUILD_EXAMPLES=ON ..
+cd opencv-3.3.0/
+mkdir build && cd build && cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D INSTALL_PYTHON_EXAMPLES=ON -D OPENCV_EXTRA_MODULES_PATH=/some/directory/here/opencv_contrib-3.3.0/modules -D BUILD_EXAMPLES=ON ..
 make -j4
 
