@@ -54,23 +54,43 @@ class CentroidTracker(Tracker):
             cX = int((x0 + x1) / 2.0)
             cY = int((y0 + y1) / 2.0)
             centroids[i] = (cX, cY)
+            
+        if(len(self.objects) == 0):
+            for i in range(0, len(centroids)):
+                self.register(centroids[i])
+                
+        else:
+            print("here")
+            objCentroids = []
+            objIDs = list(self.objects.keys())
+            for obj in list(ct.objects.values()):#.features["currentLocation"]):
+                objCentroids.append(obj.features["currentLocation"])
 
 
-def Test1():
-    ct = CentroidTracker()
+def Test2(ct):
+    ct.Register(Trackable(str(ct.nextID), (1,1)))
+    ct.Register(Trackable(str(ct.nextID), (2,2)))
+    ct.Register(Trackable(str(ct.nextID), (3,3)))
+    ct.Register(Trackable(str(ct.nextID), (4,4)))
+    ct.Register(Trackable(str(ct.nextID), (5,5)))
+    ct.Register(Trackable(str(ct.nextID), (6,6)))
+    
+
+def Test1(ct):
     ct.Register(Trackable(str(ct.nextID), (0,0)))
     print(list(ct.objects.keys()))
     #print(ct.objects["0"].features["life"])
-    ct.Update([(0,0)])
+    ct.Update([(1, 2, 1, 2)])
     ct.Update()
     ct.Update()
     ct.Register(Trackable(str(ct.nextID), (1,1)))
-    ct.Update([(0,0)])
+    ct.Update([(3,3, 3, 3)])
     print(list(ct.objects))
     ct.Update()
     ct.Update()
     print(len(ct.objects.keys()))
     print(list(ct.objects))
+    
     for i in range(0, 6):
         ct.Update()
         print(len(ct.objects.keys()))
@@ -85,10 +105,38 @@ def Test1():
     print(list(ct.objects))
 
 
-if(__name__ == "__main__"):
-    ct = CentroidTracker()
+def Test3(ct):
     ct.Register(Trackable(ct.nextID, (0,0)))
     print(ct.objects[0].features["life"])
     print(list(ct.objects))
     ct.Update()
+
+
+if(__name__ == "__main__"):
+    ct = CentroidTracker()
+    Test2(ct)
+    for loc in list(ct.objects.values()):#.features["currentLocation"]):
+        print(loc.features["currentLocation"])
+    Test1(ct)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
