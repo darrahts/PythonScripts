@@ -1,0 +1,5 @@
+ mp3cut -o song3short.mp3 -t 00:00:00+000-00:00:42+000 song3.mp3
+
+
+sox song0short.mp3 song0shortfaded.mp3 fade h 0 00:00:42 5
+

@@ -44,8 +44,6 @@ class CentroidTracker(Tracker):
                 obj.features["life"] -= 1
                 if(obj.features["life"] == 0):
                     self.DeRegister(obj)
-                    
-            #return self.objects
             return
         
         centroids = np.zeros((len(rects), 2), dtype="int")
@@ -58,13 +56,48 @@ class CentroidTracker(Tracker):
         if(len(self.objects) == 0):
             for i in range(0, len(centroids)):
                 self.register(centroids[i])
+            return
                 
         else:
             print("here")
             objCentroids = []
             objIDs = list(self.objects.keys())
-            for obj in list(ct.objects.values()):#.features["currentLocation"]):
+            for obj in list(ct.objects.values()):
                 objCentroids.append(obj.features["currentLocation"])
+            D = dist.cdist(np.array(objCentroids), centroids)
+            rows = D.min(axis=1).argsort()
+            cols = D.argmin(axis=1)[rows]
+            
+            usedRows = set()
+            usedCols = set()
+            
+            for (row,col) in zip(rows, cols):
+                if(row in usesdRows or col in usedCols):
+                    continue
+                objID = objIDs[row]
+                self.objects[objID] = centroids[col]
+                
+                usedRows.add(row)
+                usedCols.add(col)
+                
+                unusedRows = set(range(0, D.shape[0])).difference(usedRows)
+                unusedCols = set(range(0, D.shape[1])).difference(usedCols)
+                
+                if(D.shape[0] >= D.shape[1]):
+                    for row in unusedRows:
+                        objID = objIDs[row]
+                        obj = self.objects[objID]
+                        obj.features["life"] -= 1
+                        
+                        if(obj.features["life"] <= 0):
+                            self.deregister(obj)
+                            
+                        else:
+                            for col in unusedCols:
+                                self.register(centroids[col])
+                    
+                    return self.objects
+                
 
 
 def Test2(ct):
