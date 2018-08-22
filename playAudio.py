@@ -17,8 +17,9 @@ def WatchPort(s, lock, sig):
             if(msg == "clap"):
                 with lock:
                     sig.value = 1
-            if(msg == "q"):
-                break
+                    break
+##            if(msg == "q"):
+##                break
     
 
 UDP_ADR = ""
