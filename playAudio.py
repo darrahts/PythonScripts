@@ -1,11 +1,16 @@
 from multiprocessing import Process, Event, Value, Lock
-from playsound import playsound
+import pygame
 from datetime import datetime as dt
 import time
 import select
 import socket
 
-
+def PlaySong(song):
+    pygame.mixer.music.load(song)
+    pygame.mixer.music.play()
+    while(pygame.mixer.music.get_busy()):
+        pass
+    return
 
 def WatchPort(s, lock, sig):
     while True:
@@ -18,8 +23,6 @@ def WatchPort(s, lock, sig):
                 with lock:
                     sig.value = 1
                     break
-##            if(msg == "q"):
-##                break
     
 
 UDP_ADR = ""
@@ -37,6 +40,8 @@ P = Process(target=WatchPort, args=(serverSocket, L, signal ))
 P.e = Event()
 P.start()
 
+pygame.mixer.init()
+
 now = dt.now()
 startTime = dt(2018, 8, 21, 18, 20)
 
@@ -48,13 +53,13 @@ try:
             
         if(i == 0 and dt.now() >= startTime):
             print("playing 1")
-            playsound("song1short.mp3")
+            PlaySong("song1short.wav")
             print("playing 2")
-            playsound("song0shortfaded.mp3")
+            PlaySong("song0shortfaded.wav")
             i = 1
         if(signal.value == 1 and i == 1):
             print("playing 3")
-            playsound("song2short.mp3")
+            PlaySong("song2short.wav")
             print("played.")
             with lock:
                 signal.value == 2
